@@ -19,8 +19,13 @@ module ActiveRecord
 
         def preload
           associated_records_by_owner.each do |owner, associated_records|
-            owner[count_name] ||= 0
-            owner[count_name] += associated_records.map{|r| r[count_name] || 0}.sum
+            sum = associated_records.map{|r| r[count_name] || 0}.sum
+            owner.instance_eval "
+              def #{count_name}
+                @#{count_name} ||= 0
+                @#{count_name} += #{sum}
+              end  
+            "
           end
         end
 
